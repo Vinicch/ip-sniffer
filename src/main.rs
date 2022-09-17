@@ -1,6 +1,6 @@
 use std::{env, process, sync::mpsc::channel, thread};
 
-use ip_sniffer::{Arguments, scan};
+use ip_sniffer::{scan, Arguments};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -33,7 +33,7 @@ fn main() {
         out.push(p);
     }
 
-    println!("");
+    println!();
     out.sort();
 
     for v in out {

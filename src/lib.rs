@@ -2,7 +2,7 @@ use std::{
     io::{self, Write},
     net::{IpAddr, TcpStream},
     str::FromStr,
-    sync::mpsc::{Sender},
+    sync::mpsc::Sender,
 };
 
 const MAX: u16 = 65535;
@@ -24,11 +24,11 @@ impl Arguments {
         let f = args[1].clone();
 
         if let Ok(ip_addr) = IpAddr::from_str(&f) {
-            return Ok(Arguments {
+            Ok(Arguments {
                 flag: String::from(""),
                 ip_addr,
                 threads: 4,
-            });
+            })
         } else {
             let flag = args[1].clone();
 
@@ -38,9 +38,9 @@ impl Arguments {
                 \r\n      -h or -help to show this help message"
                 );
 
-                return Err("help");
+                Err("help")
             } else if flag.contains("-h") || flag.contains("-help") {
-                return Err("too many arguments");
+                Err("too many arguments")
             } else if flag.contains("-j") {
                 let ip_addr = match IpAddr::from_str(&args[3]) {
                     Ok(s) => s,
@@ -52,13 +52,13 @@ impl Arguments {
                     Err(_) => return Err("failed to parse thread number"),
                 };
 
-                return Ok(Arguments {
+                Ok(Arguments {
                     threads,
                     flag,
                     ip_addr,
-                });
+                })
             } else {
-                return Err("invalid syntax");
+                Err("invalid syntax")
             }
         }
     }
@@ -67,13 +67,10 @@ impl Arguments {
 pub fn scan(tx: Sender<u16>, start_port: u16, addr: IpAddr, num_threads: u16) {
     let mut port: u16 = start_port + 1;
     loop {
-        match TcpStream::connect((addr, port)) {
-            Ok(_) => {
-                print!(".");
-                io::stdout().flush().unwrap();
-                tx.send(port).unwrap();
-            }
-            Err(_) => {}
+        if TcpStream::connect((addr, port)).is_ok() {
+            print!(".");
+            io::stdout().flush().unwrap();
+            tx.send(port).unwrap();
         }
 
         if (MAX - port) <= num_threads {
