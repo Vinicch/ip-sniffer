@@ -1,22 +1,22 @@
-use std::{env, process, sync::mpsc::channel, thread};
+use std::{env, process, sync::mpsc, thread};
 
 use ip_sniffer::{scan, Arguments};
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let args = env::args().collect::<Vec<String>>();
     let program = args[0].clone();
     let arguments = Arguments::new(&args).unwrap_or_else(|err| {
         if err.contains("help") {
             process::exit(0);
         } else {
-            eprintln!("{} problem parsing arguments: {}", program, err);
+            eprintln!("{program} problem parsing arguments: {err}");
             process::exit(0);
         }
     });
 
     let num_threads = arguments.threads;
     let addr = arguments.ip_addr;
-    let (tx, rx) = channel();
+    let (tx, rx) = mpsc::channel();
 
     for i in 0..num_threads {
         let tx = tx.clone();
@@ -37,6 +37,6 @@ fn main() {
     out.sort();
 
     for v in out {
-        println!("{} is open", v);
+        println!("{v} is open");
     }
 }
